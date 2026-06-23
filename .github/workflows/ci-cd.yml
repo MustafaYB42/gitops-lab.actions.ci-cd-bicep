@@ -35,7 +35,7 @@ jobs:
     - name: Test
       run: dotnet test --no-build --verbosity normal
 
-      steps:
+steps:
 - name: Checkout Sources
   uses: actions/checkout@v4
 - name: Setup .NET
@@ -51,7 +51,7 @@ jobs:
 - name: Publish 
   run: dotnet publish --configuration ${{ env.configuration }} --output ${{runner.temp }}/publish
 
-  - name: Upload the Publish artifact
+- name: Upload the Publish artifact
   uses: actions/upload-artifact@v4
   with: 
     name: publish_artifact
@@ -63,3 +63,20 @@ jobs:
     name: templates_artifact
     path: ./templates/* 
     retention-days: 30
+
+
+RG-Job:
+  runs-on: ubuntu-latest
+  needs: [Build-Job]
+
+
+steps:
+  - name: Login to Azure
+    uses: azure/login@v2
+    with:
+      creds: ${{ secrets.AZURE_CREDENTIALS }}
+  - name: Create Resource Group
+    uses: Azure/cli@v2
+    with:
+      inlineScript: 
+        az group create --name ${{ env.AZURE_RG }} --location ${{ env.AZURE-LOCATION }}
